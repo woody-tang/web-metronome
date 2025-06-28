@@ -54,6 +54,7 @@ defineProps<{
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin: 20px 0;
 }
 
 .beat-indicator {
@@ -62,7 +63,6 @@ defineProps<{
     gap: 12px;
     flex-wrap: wrap;
     justify-content: center;
-    margin-top: 30px;
     margin-bottom: 15px;
 }
 

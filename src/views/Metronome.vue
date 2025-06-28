@@ -1,9 +1,20 @@
 <template>
 
     <div class="metronome-container shadow-3">
-        <div class="title"><span>Woody在线节拍器</span></div>
-
+        <div class="title"><span>🎸Woody在线节拍器🥁</span></div>
+        <div>
+            <q-item class="q-pl-lg">
+                <q-item-section avatar>
+                    <q-icon color="teal" :name="mdiVolumeHigh" />
+                </q-item-section>
+                <q-item-section style="margin-left: -25px; margin-right: 20px;">
+                    <q-slider v-model="metronomeVol" :min="0" :max="100" color="teal" label switch-label-side
+                        @update:model-value="tickPlayer.volume = metronomeVol" />
+                </q-item-section>
+            </q-item>
+        </div>
         <BpmControl :bpm="bpm" :maxBpm="BPM_CONSTS.max" :minBpm='BPM_CONSTS.min' @update:bpm="handleBpmChange" />
+
 
         <BeatIndicator :current-main-beat="currentMainBeat" :current-sub-beat="currentSubBeat"
             :time-signature="currentTimeSignature" :current-pattern="currentSubDevisionPattern"
@@ -15,18 +26,22 @@
             v-model:stress-first-beat="stressFirstBeat" v-model:stress-first-sub-beat="stressFirstSubBeat" />
 
         <PlaybackControls :is-playing="isPlaying" @toggle-play="togglePlay" @reset-metronome="handleRest" />
+
     </div>
+
+
+
     <div style="flex-direction: column;display: flex; align-items: center; padding: 30px;">
         <span style="font-size: large; font-weight: bold;">->更多内容正在赶来...</span>
     </div>
+
 </template>
 
 <script setup lang="ts">
-// #TODO 解决ts报错问题
-import { SyntheticSoundPlayer, AudioProcessor } from '../utils/audioProcessor.ts'
-import { getSoundById } from "../utils/metronome-sound-scanner.ts"
+import { availableSoundIds, MetronomeSoundPlayer } from '../utils/MetronomeSoundPlayer.ts'
 import { Metronome, BPM_CONSTS, SUBDIVISION_TYPES } from '../utils/MetronomeEngine.ts'
-import { clip } from '../utils/commonUtils.ts'
+import { mdiVolumeHigh } from '@quasar/extras/mdi-v6'
+import { clip } from '../utils/common-utils.ts'
 
 import type { SubdivisionType, SubBeatEvent } from '../utils/MetronomeEngine.ts'
 
@@ -35,14 +50,6 @@ import BpmControl from '../components/metronome/BpmControl.vue'
 import TimeSignature from '../components/metronome/TimeSignature.vue'
 import PlaybackControls from '../components/metronome/PlaybackControls.vue'
 import BeatIndicator from '../components/metronome/BeatIndicator.vue'
-
-// #TODO 研究下怎么把这个里面的数据变成响应式还要求解耦
-// #TODO 改成ts语法，解决错误
-const metronome = new Metronome(onMetronomeBeat);
-const tickPlayer = new SyntheticSoundPlayer(2);
-const presetPlayer = new AudioProcessor(undefined, 50, 50);
-
-const isPlaying = ref(metronome.getIsPlaying());
 
 // 节拍器的主要配置
 const bpm = ref(68);
@@ -56,7 +63,7 @@ const currentSubDevisionPattern = computed(() => {
         return [1]; //四分
 }
 );
-const currentTimbrePreset = ref('perc-can');
+const currentTimbrePreset = ref(availableSoundIds[4]);
 const stressFirstBeat = ref(true);
 const stressFirstSubBeat = ref(true);
 
@@ -64,6 +71,15 @@ const stressFirstSubBeat = ref(true);
 const currentMainBeat = ref(0);
 const currentSubBeat = ref(0);
 
+// 音量
+const metronomeVol = ref(65);
+
+// #TODO 研究下怎么把这个里面的数据变成响应式还要求解耦
+const metronome = new Metronome(onMetronomeBeat);
+const tickPlayer = new MetronomeSoundPlayer(metronomeVol.value, currentTimbrePreset.value);
+
+
+const isPlaying = ref(metronome.getIsPlaying());
 // 开始节拍器（支持细分）
 function startMetronome() {
     // 开始节拍器
@@ -112,13 +128,13 @@ function handleSubDivisionTpyeChange(newType: SubdivisionType) {
     currentSubDevision.value = newType;
     metronome.setSubdivision(newType);
 }
-function handleTimbrePresetTypeChange(newType: string) {
-    currentTimbrePreset.value = newType;
-    if (!presetPlayer.isInitialized) presetPlayer.init(); //TODO：为什么只有这个才有这个问题
-    if (newType !== 'live-synth')
-        presetPlayer.setSound(getSoundById(newType));
-
-    console.log(newType);
+function handleTimbrePresetTypeChange(newSoundId: string) {
+    currentTimbrePreset.value = newSoundId;
+    tickPlayer.updateSound(newSoundId);
+    // if (!presetPlayer.preLoaded) presetPlayer.init(); //TODO：为什么只有这个才有这个问题
+    // if (newSoundId !== 'live-synth')
+    //     presetPlayer.setSound(getSoundById(newSoundId));
+    // console.log(newSoundId);
 }
 /**写法2
  * 子组件中不变，同样要写@update:model-value
@@ -141,31 +157,9 @@ watch(
     }
 );
 
-function playClick(evt: SubBeatEvent) {
-    // #TODO： evt:xxx 改成ts
-    if (currentTimbrePreset.value == 'live-synth')
-        tickPlayer.playSound(evt);
-    else { // 其他音色
-        if ((stressFirstBeat.value && stressFirstSubBeat.value) || (!stressFirstBeat.value && stressFirstSubBeat.value))// 都开启时第一主拍，或者只开启压力第一子拍
-        {
-            if ((evt.isFirstMainBeat && evt.isFirstSubBeat) || evt.isFirstSubBeat)
-                presetPlayer.play(true);
-            else
-                presetPlayer.play(false);
-        } else if (stressFirstBeat.value && !stressFirstSubBeat.value) {//只开启压力第一主拍
-            if (evt.isFirstMainBeat && evt.isFirstSubBeat)
-                presetPlayer.play(true);
-            else
-                presetPlayer.play(false);
-        }
-        else {//全关
-            presetPlayer.play(false);
-        }
-    }
-}
 
 function onMetronomeBeat(evt: SubBeatEvent) {
-    playClick(evt);
+    tickPlayer.playClick(evt);
     currentMainBeat.value = evt.mainBeatIndex;
     currentSubBeat.value = evt.subBeatIndex;
 }
@@ -185,14 +179,13 @@ onUnmounted(() => {
 })
 </script>
 
-<style>
+<style scoped>
 .metronome-container {
-    max-width: 750px;
+    max-width: 1000px;
     min-width: 350px;
     margin: 0 auto;
     padding: 20px;
     border-radius: 40px;
-    /* background-color:cornsilk; */
 }
 
 .title {

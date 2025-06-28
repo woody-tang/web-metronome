@@ -49,8 +49,7 @@ onUnmounted(() => {
 .playback-controls {
   display: flex;
   justify-content: center;
-  gap: 8px 10px;
+  gap: 0px 10px;
   flex-wrap: wrap;
-  margin-top: 24px;
 }
 </style>

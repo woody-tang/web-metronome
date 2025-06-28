@@ -1,7 +1,7 @@
 <template>
     <div class="bpm-control shadow-10">
         <div class="column items-center q-mb-sm" @click="clickBpm">
-            <div class="row justify-center items-end ">
+            <div class="row justify-center items-end no-wrap">
                 <text class="bpm-head-text">{{ bpm }}</text>
                 <div class='column items-center'>
                     <text v-if="tapCount" class="tap-times">{{ `combo ${tapCount}` }}</text>

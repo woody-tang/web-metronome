@@ -1,17 +1,17 @@
 <template>
   <div class="time-signature">
-    <div class='row no-wrap'>
+    <div class='selections'>
       <q-select filled dense class="time-sig-select" transition-show="jump-up" behavior="menu"
-        v-model="localTimeSignature" hide-dropdown-icon :options="timeSignatureOptions" label="拍号选择"
-        @update:model-value="updateTimeSignature" />
+        v-model="localTimeSignature" hide-dropdown-icon options-cover stack-label :options="timeSignatureOptions"
+        label="拍号选择" @update:model-value="updateTimeSignature" />
       <q-select filled dense class="time-sig-select" transition-show="jump-up" behavior="menu"
-        v-model="localSubDivisionType" hide-dropdown-icon :options="subDivisionOptions" label="子拍细分"
-        @update:model-value="updateSubDivisionType" />
+        v-model="localSubDivisionType" hide-dropdown-icon options-cover stack-label :options="subDivisionOptions"
+        label="子拍细分" @update:model-value="updateSubDivisionType" />
       <q-select filled dense class="time-sig-select" transition-show="jump-up" behavior="menu" v-model="localTimbreType"
-        hide-dropdown-icon options-cover stack-label :options="timbrePresetOptions" label="音色选择"
+        hide-dropdown-icon options-cover stack-label :options="availableSoundIds" label="音色选择"
         @update:model-value="updateTimbreType" />
     </div>
-    <div class='row no-wrap'>
+    <div class='stress-control'>
       <q-toggle label="压力主第一拍" v-model="localStressFirstBeat" @update:model-value="updateStressFirstBeat" />
       <q-toggle label="压力子第一拍" v-model="localStressFirstSubBeat" @update:model-value="updateStressFirstSubBeat" />
     </div>
@@ -21,7 +21,7 @@
 <script setup lang='ts'>
 import { ref } from 'vue'
 import { TIME_SIGNATURE_TYPES, SUBDIVISION_TYPES } from '../../utils/MetronomeEngine.ts'
-import { localMetronomeSoundsIdList } from '../../utils/metronome-sound-scanner.ts'
+import { availableSoundIds } from '../../utils/MetronomeSoundPlayer.ts'
 // #TODO:规范ts文件命名
 const props = defineProps({
   timeSignature: {//节拍
@@ -61,44 +61,53 @@ const localTimbreType = ref(props.timbrePresetType);
 const timeSignatureOptions = TIME_SIGNATURE_TYPES;
 const subDivisionOptions = SUBDIVISION_TYPES.map(({ name }) => name);
 
-const timbrePresetOptions = ['live-synth', ...localMetronomeSoundsIdList]; // 把实时合成的音色加载第一位供选择
-
-function updateTimeSignature(newValue:string) {
+function updateTimeSignature(newValue: string) {
   emit('update:time-signature', timeSignatureOptions.indexOf(newValue) + 1);
 }
 
-function updateSubDivisionType(newValue:string) {
+function updateSubDivisionType(newValue: string) {
   emit('update:sub-division-type', newValue)
 }
 
-function updateTimbreType(newValue:string) {
+function updateTimbreType(newValue: string) {
   emit('update:timbre-preset-type', newValue);
 }
 
 
-function updateStressFirstBeat(newValue:boolean) {
+function updateStressFirstBeat(newValue: boolean) {
   emit('update:stress-first-beat', newValue)
 }
 
-function updateStressFirstSubBeat(newValue:boolean) {
+function updateStressFirstSubBeat(newValue: boolean) {
   emit('update:stress-first-sub-beat', newValue)
 }
 
 
 </script>
 
-<style>
+<style scoped>
 .time-signature {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
   align-items: center;
-  margin: 10px 0;
+}
+
+.selections {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 5px;
+  /* gap: 10px; */
 }
 
 .time-sig-select {
   /* width: 80px; */
   min-width: 70px;
-  margin: 0 10px;
+  margin: 0 5px;
+}
+
+.stress-control {
+  display: flex;
+  flex-direction: row;
 }
 </style>

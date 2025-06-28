@@ -7,7 +7,6 @@ export interface MetronomeSound {
 }
 
 export const localMetronomeSoundPacks: MetronomeSound[] = scanMetronomeSounds();
-export const localMetronomeSoundsIdList: String[] = localMetronomeSoundPacks.map(({ id }) => id);
 
 export function getSoundById(id: string): MetronomeSound {
     const sdpk = localMetronomeSoundPacks.find(sound => sound.id === id)

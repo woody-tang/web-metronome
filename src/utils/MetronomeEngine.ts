@@ -1,12 +1,12 @@
 // Metronome.ts
 // deepseek generated 2025.6.21
 
-import { clip } from './commonUtils.ts'
+import { clip } from './common-utils.ts'
 
 // types
 export type SubdivisionType = 'quarter' | 'eighth' | 'triplet' | 'sixteenth' |
     'dotted31' | 'dotted13' | 'front16' | 'back16' |
-    'syncopation' | 'tripletVariant';
+    'syncopation' | 'triplet-variant' | 'triplet-variant1';
 
 interface Subdivision {
     name: SubdivisionType;
@@ -44,7 +44,8 @@ export const SUBDIVISION_TYPES: Subdivision[] = [
     { name: "back16", pattern: [0.5, 0.25, 0.25], description: "前八后十六", icon_src: "" },
     { name: "syncopation", pattern: [0.25, 0.5, 0.25], description: "切分节奏", icon_src: "" },
     { name: "front16", pattern: [0.25, 0.25, 0.5], description: "前十六后八", icon_src: "" },
-    { name: "tripletVariant", pattern: [0.5, 1 / 6, 1 / 6, 1 / 6], description: "三连音变体", icon_src: "" }
+    { name: "triplet-variant", pattern: [0.5, 1 / 6, 1 / 6, 1 / 6], description: "三连音变体", icon_src: "" },
+    { name: "triplet-variant1", pattern: [1 / 6, 1 / 6, 1 / 6, 0.5], description: "三连音变体1", icon_src: "" }
 ];
 
 // logger
