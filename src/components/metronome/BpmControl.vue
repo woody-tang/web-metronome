@@ -20,7 +20,7 @@
         <div class="row items-center no-wrap q-pb-sm">
             <q-btn round :icon="mdiMinusThick" color='primary' @click="decreaseBpm" class="q-mr-lg"
                 :disable="bpm <= minBpm" />
-            <q-slider v-model="localBpm" :min="props.minBpm" :max="props.maxBpm" :step="1" track-size="6px"
+            <q-slider :model-value="props.bpm" :min="props.minBpm" :max="props.maxBpm" :step="1" track-size="6px"
                 thumb-size="30px" color="primary" @update:model-value="updateBpm" label switch-label-side />
             <q-btn round :icon="mdiPlusThick" color='primary' @click="increaseBpm" class="q-ml-lg"
                 :disable="bpm >= maxBpm" />
@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { mdiGestureDoubleTap, mdiMinusThick, mdiPlusThick } from '@quasar/extras/mdi-v6'
 import { isDesktop } from '../../utils/device-type-test.ts'
 
@@ -53,18 +53,18 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:bpm'])
-const localBpm = ref(props.bpm)
+// const localBpm = ref(props.bpm);
 // 点击bpm用到的变量
 const tapTimes = ref<number[]>([]);
 const tapCount = ref(0);
 const maxRecords = 8; // 记录最近8次点击
 
-watch(() => props.bpm, (newVal) => {
-    localBpm.value = newVal
-}, { immediate: true })
+// watch(() => props.bpm, (newVal) => {
+//     props.bpm = newVal
+// }, { immediate: true })
 
 const tempoLabel = computed(() => {
-    const bpm = localBpm.value;
+    const bpm = props.bpm;
     if (bpm >= 10 && bpm < 20) return '极端缓慢 (Larghissimo)';
     if (bpm >= 20 && bpm < 41) return '沉重板 (Grave)';
     if (bpm >= 41 && bpm < 46) return '缓板 (Lento)';
@@ -93,16 +93,14 @@ function updateBpm(newBpm: number | null) {
 }
 
 function increaseBpm() {
-    if (localBpm.value < props.maxBpm) {
-        localBpm.value = Math.min(localBpm.value + props.stepSize, props.maxBpm)
-        updateBpm(localBpm.value);
+    if (props.bpm < props.maxBpm) {
+        updateBpm(Math.min(props.bpm + props.stepSize, props.maxBpm));
     }
 }
 
 function decreaseBpm() {
-    if (localBpm.value > props.minBpm) {
-        localBpm.value = Math.max(localBpm.value - props.stepSize, props.minBpm);
-        updateBpm(localBpm.value);
+    if (props.bpm > props.minBpm) {
+        updateBpm(Math.max(props.bpm - props.stepSize, props.minBpm));
     }
 }
 
@@ -147,9 +145,7 @@ const calculateBpm = () => {
 
     const avgInterval = intervals.reduce((sum, val) => sum + val, 0) / intervals.length;
 
-    localBpm.value = Math.max(props.minBpm, Math.min(props.maxBpm, Math.round(60000 / avgInterval)))
-
-    updateBpm(localBpm.value);
+    updateBpm(Math.max(props.minBpm, Math.min(props.maxBpm, Math.round(60000 / avgInterval))));
 
 };
 
