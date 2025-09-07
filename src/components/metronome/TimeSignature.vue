@@ -2,14 +2,15 @@
   <div class="time-signature">
     <div class='selections'>
       <q-select filled dense class="time-sig-select" transition-show="jump-up" behavior="menu"
-        :model-value="props.timeSignature" hide-dropdown-icon options-cover stack-label :options="timeSignatureOptions"
-        label="拍号选择" @update:model-value="updateTimeSignature" />
+        :model-value="timeSignatureOptions[props.timeSignature - 1]" hide-dropdown-icon options-cover stack-label
+        :options="timeSignatureOptions" label="拍号选择"
+        @update:model-value="$emit('update:time-signature', (timeSignatureOptions.indexOf($event) + 1))" />
       <q-select filled dense class="time-sig-select" transition-show="jump-up" behavior="menu"
         :model-value="props.subDivisionType" hide-dropdown-icon options-cover stack-label :options="subDivisionOptions"
-        label="子拍细分" @update:model-value="updateSubDivisionType" />
+        label="子拍细分" @update:model-value="$emit('update:sub-division-type', $event)" />
       <q-select filled dense class="time-sig-select" transition-show="jump-up" behavior="menu"
         :model-value="props.timbrePresetType" hide-dropdown-icon options-cover stack-label :options="availableSoundIds"
-        label="音色选择" @update:model-value="updateTimbreType" />
+        label="音色选择" @update:model-value="$emit('update:timbre-preset-type', $event);" />
     </div>
     <div class='stress-control'>
       <q-toggle label="压力主第一拍" :model-value="props.stressFirstBeat" @update:model-value="updateStressFirstBeat" />
@@ -48,7 +49,7 @@ const props = defineProps({
 const emit = defineEmits([
   'update:time-signature', 'update:sub-division-type',
   'update:stress-first-beat', 'update:stress-first-sub-beat',
-  'update:timbre-preset-type',
+  'update:timbre-preset-type'
 ]);
 
 const timeSignatureOptions = TIME_SIGNATURE_TYPES;

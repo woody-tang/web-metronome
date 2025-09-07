@@ -19,7 +19,7 @@
             </q-item>
         </div>
         <BpmControl :bpm="metronome.bpm" :maxBpm="BPM_CONSTS.max" :minBpm='BPM_CONSTS.min'
-            @update:bpm="handleBpmChange" />
+            @update:bpm="v => { metronome.bpm = v; }" />
 
 
         <BeatIndicator :current-main-beat="metronome.mainBeat" :current-sub-beat="metronome.subBeat"
@@ -27,12 +27,13 @@
             :emphasize-first-beat="metronome.stressFirstBeat"
             :emphasize-first-sub-beat="metronome.stressFirstSubBeat" />
 
-        <TimeSignature :time-signature="metronome.timeSignature" @update:time-signature="handleTimeSignatureChange"
-            :sub-division-type="metronome.subdivision" @update:sub-division-type="handleSubDivisionTpyeChange"
-            :timbre-preset-type="metronome.timbre" @update:timbre-preset-type="handleTimbrePresetTypeChange"
-            :stress-first-beat="metronome.stressFirstBeat" @update:stress-first-beat="handleStressFirstBeatChange"
+        <TimeSignature :time-signature="metronome.timeSignature"
+            @update:time-signature="v => { metronome.timeSignature = v }" :sub-division-type="metronome.subdivision"
+            @update:sub-division-type="v => { metronome.subdivision = v }" :timbre-preset-type="metronome.timbre"
+            @update:timbre-preset-type="v => { metronome.timbre = v }" :stress-first-beat="metronome.stressFirstBeat"
+            @update:stress-first-beat="v => { metronome.stressFirstBeat = v }"
             :stress-first-sub-beat="metronome.stressFirstSubBeat"
-            @update:stress-first-sub-beat="handleStressFirstSubBeatChange" />
+            @update:stress-first-sub-beat="v => { metronome.stressFirstSubBeat = v }" />
 
         <PlaybackControls :is-playing="metronome.isPlaying" @toggle-play="handleTogglePlay"
             @reset-metronome="handleRest" />
@@ -47,8 +48,6 @@
 
 import { Metronome, BPM_CONSTS, SUBDIVISION_TYPES } from '../utils/MetronomeEngine.ts'
 import { mdiVolumeHigh, mdiVolumeMedium, mdiVolumeLow, mdiVolumeOff } from '@quasar/extras/mdi-v6'
-
-import type { SubdivisionType } from '../utils/MetronomeEngine.ts'
 
 import { reactive, onUnmounted, computed, watch } from 'vue'
 import BpmControl from '../components/metronome/BpmControl.vue'
@@ -69,45 +68,16 @@ const savedMetronomeState = localStorage.getItem('metronomeState');
 const metronome = reactive(new Metronome(savedMetronomeState ? savedMetronomeState : undefined));
 
 let saveTimeout: number;//防抖计时器id
-const relevantProps = computed(() => (metronome.getCurrentMetronomeState(true) as string));
+const relevantProps = computed(() => (metronome.getCurrentMetronomeState()));
 
 watch(relevantProps, (newState) => {
     // 防抖保存
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
         // console.log(newState);
-        localStorage.setItem('metronomeState', newState);
+        localStorage.setItem('metronomeState', JSON.stringify(newState));
     }, 500); // 500ms内只保存一次
-}, { deep: true });
-
-//TODO:修改成这种方式更新参数，免去创建多个函数的麻烦
-// type ChangeabelConfig = 'timeSignature';
-// function handleConfigUpdate(payload: { key: ChangeabelConfig, value: any }) {
-//     metronome[payload.key] = payload.value;
-//     console.log(payload);
-
-// }
-// 处理BPM变化
-function handleBpmChange(newBpm: number) {
-    metronome.bpm = newBpm;
-    //#TODO 配置修改设置后保持连续性
-}
-function handleTimeSignatureChange(v: number) {
-    metronome.timeSignature = v;
-}
-function handleSubDivisionTpyeChange(newType: SubdivisionType) {
-    metronome.subdivision = newType;
-}
-
-function handleTimbrePresetTypeChange(newSoundId: string) {
-    metronome.timbre = newSoundId;
-}
-function handleStressFirstBeatChange(v: boolean) {
-    metronome.stressFirstBeat = v;
-}
-function handleStressFirstSubBeatChange(v: boolean) {
-    metronome.stressFirstSubBeat = v;
-}
+});
 
 function handleTogglePlay() {
     if (!metronome.isPlaying)

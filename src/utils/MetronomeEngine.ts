@@ -212,7 +212,7 @@ export class Metronome {
     private _isMuted: boolean = false;
     private tickPlayer: MetronomeSoundPlayer = new MetronomeSoundPlayer(this.volume, this.currentTimbrePreset);
 
-    public getCurrentMetronomeState(stringify: boolean = true): MetronomeState | string {
+    public getCurrentMetronomeState(): MetronomeState | string {
         const result = {
             bpm: this.bpm,
             timeSignature: this.timeSignature,
@@ -223,7 +223,7 @@ export class Metronome {
             stressFirstBeat: this.stressFirstBeat,
             stressFirstSubBeat: this.stressFirstSubBeat
         }
-        return stringify ? JSON.stringify(result) : result
+        return result
     }
 
     constructor(metronomeState?: string, private onBeatCallBack?: (event: SubBeatEvent) => void) {
@@ -256,12 +256,11 @@ export class Metronome {
         }
         // 设置新的防抖定时器
         this._bpmChangeTimeout = setTimeout(() => {
-
             if (this.isPlaying) {
                 this.restart();
             }
             this._bpmChangeTimeout = null;
-        }, 1000);
+        }, 50);
 
     }
     public get bpm(): number {
