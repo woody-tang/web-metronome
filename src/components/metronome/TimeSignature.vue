@@ -10,11 +10,11 @@
         label="子拍细分" @update:model-value="$emit('update:sub-division-type', $event)" />
       <q-select filled dense class="time-sig-select" transition-show="jump-up" behavior="menu"
         :model-value="props.timbrePresetType" hide-dropdown-icon options-cover stack-label :options="availableSoundIds"
-        label="音色选择" @update:model-value="$emit('update:timbre-preset-type', $event);" />
+        label="音色选择" @update:model-value="$emit('update:timbre-preset-type', $event)" />
     </div>
     <div class='stress-control'>
-      <q-toggle label="压力主第一拍" :model-value="props.stressFirstBeat" @update:model-value="updateStressFirstBeat" />
-      <q-toggle label="压力子第一拍" :model-value="props.stressFirstSubBeat" @update:model-value="updateStressFirstSubBeat" />
+      <q-toggle label="压力主第一拍" :model-value="props.stressFirstBeat" @update:model-value="$emit('update:stress-first-beat', $event);" />
+      <q-toggle label="压力子第一拍" :model-value="props.stressFirstSubBeat" @update:model-value="$emit('update:stress-first-sub-beat', $event);" />
     </div>
   </div>
 </template>
@@ -54,28 +54,6 @@ const emit = defineEmits([
 
 const timeSignatureOptions = TIME_SIGNATURE_TYPES;
 const subDivisionOptions = SUBDIVISION_TYPES.map(({ name }) => name);
-
-function updateTimeSignature(newValue: string) {
-  emit('update:time-signature', timeSignatureOptions.indexOf(newValue) + 1);
-}
-
-function updateSubDivisionType(newValue: string) {
-  emit('update:sub-division-type', newValue)
-}
-
-function updateTimbreType(newValue: string) {
-  emit('update:timbre-preset-type', newValue);
-}
-
-
-function updateStressFirstBeat(newValue: boolean) {
-  emit('update:stress-first-beat', newValue)
-}
-
-function updateStressFirstSubBeat(newValue: boolean) {
-  emit('update:stress-first-sub-beat', newValue)
-}
-
 
 </script>
 
